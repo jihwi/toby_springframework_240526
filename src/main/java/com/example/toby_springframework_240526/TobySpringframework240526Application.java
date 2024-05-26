@@ -1,8 +1,6 @@
 package com.example.toby_springframework_240526;
 
-import com.example.toby_springframework_240526.dao.CountingConnectionMaker;
 import com.example.toby_springframework_240526.dao.DaoFactory;
-import com.example.toby_springframework_240526.dao.NSimpleConnectionMaker;
 import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.User;
 import org.springframework.boot.SpringApplication;
@@ -15,8 +13,8 @@ import java.sql.SQLException;
 @SpringBootApplication
 public class TobySpringframework240526Application {
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        SpringApplication.run(TobySpringframework240526Application.class, args);
+    public static void main(String[] args) throws SQLException {
+//        SpringApplication.run(TobySpringframework240526Application.class, args);
 
 
         ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
@@ -36,17 +34,5 @@ public class TobySpringframework240526Application {
 
         System.out.println(user2.getId() + " 조회 성공");
 
-        CountingConnectionMaker countingConnectionMaker = context.getBean(CountingConnectionMaker.class);
-        System.out.println("connection counter : " + countingConnectionMaker.getCounter());
     }
-
-//    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-//
-//        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
-//        UserDao userDao1 = context.getBean("userDao", UserDao.class);
-//        UserDao userDao2 = context.getBean("userDao", UserDao.class);
-//
-//        System.out.println(userDao1);
-//        System.out.println(userDao2); //동일 객체 (싱글톤)
-//    }
 }

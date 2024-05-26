@@ -2,6 +2,7 @@ package com.example.toby_springframework_240526.dao;
 
 import com.example.toby_springframework_240526.domain.User;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,14 +10,14 @@ import java.sql.SQLException;
 
 public class UserDao {
 
-    private SimpleConnectionMaker simpleConnectionMaker;
+    private DataSource dataSource;
 
-    public UserDao(SimpleConnectionMaker simpleConnectionMaker) {
-        this.simpleConnectionMaker = simpleConnectionMaker; //관계설정 책임 분리
+    public UserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    public void add(User user) throws ClassNotFoundException, SQLException {
-        Connection c = simpleConnectionMaker.getConnection();
+    public void add(User user) throws SQLException {
+        Connection c = dataSource.getConnection();
 
         PreparedStatement ps = c.prepareStatement(
                 "insert into users(id, name, password) values (?,?,?)"
@@ -30,8 +31,8 @@ public class UserDao {
         c.close();
     }
 
-    public User get(String id) throws ClassNotFoundException, SQLException {
-        Connection c = simpleConnectionMaker.getConnection();
+    public User get(String id) throws SQLException {
+        Connection c = dataSource.getConnection();
 
         PreparedStatement ps = c.prepareStatement(
                 "select * from users where id = ?"
