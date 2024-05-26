@@ -3,6 +3,7 @@ package com.example.toby_springframework_240526;
 import com.example.toby_springframework_240526.dao.DaoFactory;
 import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.User;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -15,14 +16,23 @@ import static org.junit.Assert.assertThat;
 
 public class UserDaoTest {
 
-    @Test
-    public void addAndGet() throws SQLException {
+    private UserDao dao;
+
+    /**
+     * 테스트마다 실행전에 사전작업은 before에 중복제거
+     * @throws SQLException
+     */
+    @Before
+    public void init() throws SQLException {
         ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
-        UserDao dao = context.getBean(UserDao.class);
+        dao = context.getBean(UserDao.class);
 
         dao.deleteAll();
         assertThat(dao.getCount(), is(0));
+    }
 
+    @Test
+    public void addAndGet() throws SQLException {
         User user = new User();
         user.setId("gyumee");
         user.setName("박성철");
@@ -39,13 +49,6 @@ public class UserDaoTest {
 
     @Test(expected = EmptyResultDataAccessException.class)
     public void getUserFailure() throws SQLException {
-        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
-        UserDao dao = context.getBean(UserDao.class);
-
-        dao.deleteAll();
-        assertThat(dao.getCount(), is(0));
-
         dao.get("unknown_id");
-
     }
 }
