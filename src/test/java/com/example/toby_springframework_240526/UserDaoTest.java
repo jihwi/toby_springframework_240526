@@ -5,16 +5,24 @@ import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.User;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.SQLException;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+@RunWith(SpringJUnit4ClassRunner.class) //테스트중에 사용할 애플리케이션 컨텍스트를 생성
+@ContextConfiguration(classes = DaoFactory.class) //설정 정보 세팅
 public class UserDaoTest {
+
+    @Autowired
+    private ApplicationContext context;
 
     private UserDao dao;
 
@@ -24,7 +32,9 @@ public class UserDaoTest {
      */
     @Before
     public void init() throws SQLException {
-        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
+        System.out.println(this.context);
+        System.out.println(this);
+
         dao = context.getBean(UserDao.class);
 
         dao.deleteAll();
