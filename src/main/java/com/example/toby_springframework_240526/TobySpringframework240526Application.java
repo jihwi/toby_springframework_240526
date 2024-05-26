@@ -1,5 +1,6 @@
 package com.example.toby_springframework_240526;
 
+import com.example.toby_springframework_240526.dao.DaoFactory;
 import com.example.toby_springframework_240526.dao.NSimpleConnectionMaker;
 import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.User;
@@ -15,7 +16,7 @@ public class TobySpringframework240526Application {
         SpringApplication.run(TobySpringframework240526Application.class, args);
 
 
-        UserDao dao = new UserDao(new NSimpleConnectionMaker()); //Client가 호출지점에서 db연결을 어디로 할지 결정해서 소스변경없이 자유롭게 변경
+        UserDao dao = DaoFactory.getUserDao();//오브젝트 생성 목적의 팩토리 사용.
 
         User user = new User();
         user.setId("whiteship");
