@@ -11,7 +11,12 @@ public class DaoFactory {
 
     @Bean
     public UserDao userDao() {
-        return new UserDao(dSimpleConnectionMaker());
+        return new UserDao(connectionMaker());
+    }
+
+    @Bean
+    public SimpleConnectionMaker connectionMaker() {
+        return new CountingConnectionMaker(dSimpleConnectionMaker());
     }
 
     @Bean
