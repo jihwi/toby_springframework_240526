@@ -2,7 +2,10 @@ package com.example.toby_springframework_240526.dao;
 
 import com.example.toby_springframework_240526.domain.User;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserDao {
 

@@ -6,6 +6,8 @@ import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.User;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.sql.SQLException;
 
@@ -16,7 +18,8 @@ public class TobySpringframework240526Application {
         SpringApplication.run(TobySpringframework240526Application.class, args);
 
 
-        UserDao dao = DaoFactory.getUserDao();//오브젝트 생성 목적의 팩토리 사용.
+        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
+        UserDao dao = context.getBean("userDao", UserDao.class);
 
         User user = new User();
         user.setId("whiteship");
