@@ -41,7 +41,7 @@ public class UserDao {
         ps.setString(1, id);
         ResultSet rs = ps.executeQuery();
 
-        User user= null;
+        User user = null;
         if (rs.next()) {
             user = new User();
             user.setId(rs.getString("id"));
@@ -61,13 +61,32 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        Connection c = dataSource.getConnection();
-        PreparedStatement ps = c.prepareStatement(
-                "delete from users"
-        );
-        ps.executeUpdate();
-        ps.close();
-        c.close();
+        Connection c = null;
+        PreparedStatement ps = null;
+
+        try {
+            c = dataSource.getConnection();
+            ps = c.prepareStatement(
+                    "delete from users"
+            );
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public int getCount() throws SQLException {
