@@ -20,9 +20,7 @@ public class UserDao {
     public void add(User user) throws SQLException {
         Connection c = dataSource.getConnection();
 
-        PreparedStatement ps = c.prepareStatement(
-                "insert into users(id, name, password) values (?,?,?)"
-        );
+        PreparedStatement ps = new UserDaoAdd().makeStatement(c);
         ps.setString(1, user.getId());
         ps.setString(2, user.getName());
         ps.setString(3, user.getPassword());
@@ -66,9 +64,7 @@ public class UserDao {
 
         try {
             c = dataSource.getConnection();
-            ps = c.prepareStatement(
-                    "delete from users"
-            );
+            ps = new UserDaoDeleteAll().makeStatement(c);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw e;
@@ -88,6 +84,9 @@ public class UserDao {
             }
         }
     }
+
+
+
 
     public int getCount() throws SQLException {
         Connection c = dataSource.getConnection();
