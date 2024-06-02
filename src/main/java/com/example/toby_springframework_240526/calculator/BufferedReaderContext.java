@@ -1,4 +1,4 @@
-package com.example.toby_springframework_240526;
+package com.example.toby_springframework_240526.calculator;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
