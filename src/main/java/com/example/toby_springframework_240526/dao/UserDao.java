@@ -1,22 +1,23 @@
 package com.example.toby_springframework_240526.dao;
 
 import com.example.toby_springframework_240526.domain.User;
+import io.micrometer.common.util.StringUtils;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserDao {
 
-    private DataSource dataSource;
-    private JdbcTemplate jdbcTemplate; //스프링에서 제공하는 템플릿/콜백 
+    private JdbcTemplate jdbcTemplate; //스프링에서 제공하는 템플릿/콜백
 
     public UserDao(DataSource dataSource) {
-        this.dataSource = dataSource;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
@@ -31,80 +32,29 @@ public class UserDao {
 
 
     public User get(String id) throws SQLException, EmptyResultDataAccessException {
-        Connection c = null;
-        PreparedStatement ps = null;
+        return jdbcTemplate.queryForObject("select * from users where id = ?", new Object[]{id}, new RowMapper<User>() {
 
-        try {
-            c = dataSource.getConnection();
-            ps = c.prepareStatement(
-                    "select * from users where id = ?"
-            );
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
+            @Override
+            public User mapRow(ResultSet resultSet, int i) throws SQLException {
+                User user = new User();
+                user.setId(resultSet.getString("id"));
+                user.setName(resultSet.getString("name"));
+                user.setPassword(resultSet.getString("password"));
 
-            User user = null;
-            if (rs.next()) {
-                user = new User();
-                user.setId(rs.getString("id"));
-                user.setName(rs.getString("name"));
-                user.setPassword(rs.getString("password"));
+                return user;
             }
-
-            if (user == null) {
-                throw new EmptyResultDataAccessException(1);
-            }
-
-            return user;
-
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        });
 
     }
 
     public int getCount() throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
+        return jdbcTemplate.query("select count(*) from users", new ResultSetExtractor<Integer>() {
 
-        try {
-            c = dataSource.getConnection();
-            ps = c.prepareStatement(
-                    "select count(*) from users"
-            );
-            ResultSet rs = ps.executeQuery();
-            rs.next();
-
-            return rs.getInt(1);
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
+            @Override
+            public Integer extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+                resultSet.next();
+                return resultSet.getInt(1);
             }
-
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        });
     }
 }
