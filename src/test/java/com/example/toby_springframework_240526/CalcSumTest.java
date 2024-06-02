@@ -25,4 +25,10 @@ public class CalcSumTest {
         Integer sum = calculator.calcSum(path);
         assertThat(sum, is(10));
     }
+
+    @Test
+    public void calcMultiply() {
+        Integer multiply = calculator.calcMultiply(path);
+        assertThat(multiply, is(24));
+    }
 }

@@ -25,4 +25,20 @@ public class Calculator {
             }
         }, filePath);
     }
+
+    public Integer calcMultiply(String filePath) {
+        return context.fileReadTemplate(new BufferedReaderCallback() {
+            @Override
+            public Integer doSomething(BufferedReader br) throws IOException {
+                int multiply = 1;
+                String line;
+
+                while((line = br.readLine()) != null) {
+                    multiply *= Integer.parseInt(line);
+                }
+
+                return multiply;
+            }
+        }, filePath);
+    }
 }
