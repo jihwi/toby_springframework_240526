@@ -13,7 +13,7 @@ public class JdbcContext {
         this.dataSource = dataSource;
     }
 
-    public void jdbcContextWithStatementStrategy(StatementStrategy statementStrategy) throws SQLException {
+    private void jdbcContextWithStatementStrategy(StatementStrategy statementStrategy) throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
 
@@ -38,5 +38,33 @@ public class JdbcContext {
                 }
             }
         }
+    }
+
+    public void executeSql(String sql) throws SQLException {
+        this.jdbcContextWithStatementStrategy(new StatementStrategy() {
+
+            @Override
+            public PreparedStatement makeStatement(Connection c) throws SQLException {
+                return c.prepareStatement(
+                        sql
+                );
+            }
+        });
+    }
+
+    public void executeSql(String sql, String... params) throws SQLException {
+        this.jdbcContextWithStatementStrategy(new StatementStrategy() {
+
+            @Override
+            public PreparedStatement makeStatement(Connection c) throws SQLException {
+                PreparedStatement ps = c.prepareStatement(sql);
+                int i = 1;
+                for (String param : params) {
+                    ps.setString(i, param);
+                    i++;
+                }
+                return  ps;
+            }
+        });
     }
 }
