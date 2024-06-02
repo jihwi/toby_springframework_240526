@@ -11,34 +11,21 @@ public class Calculator {
     }
 
     public Integer calcSum(String filePath) {
-       return context.fileReadTemplate(new BufferedReaderCallback() {
-            @Override
-            public Integer doSomething(BufferedReader br) throws IOException {
-                int sum = 0;
-                String line;
-
-                while((line = br.readLine()) != null) {
-                    sum+=Integer.parseInt(line);
-                }
-
-                return sum;
-            }
-        }, filePath);
+       return context.lineReadTemplate(new LineCallback() {
+           @Override
+           public int doSomething(String line, int start) {
+               return start + Integer.parseInt(line);
+           }
+       }, filePath, 0);
     }
 
     public Integer calcMultiply(String filePath) {
-        return context.fileReadTemplate(new BufferedReaderCallback() {
+        return context.lineReadTemplate(new LineCallback() {
+
             @Override
-            public Integer doSomething(BufferedReader br) throws IOException {
-                int multiply = 1;
-                String line;
-
-                while((line = br.readLine()) != null) {
-                    multiply *= Integer.parseInt(line);
-                }
-
-                return multiply;
+            public int doSomething(String line, int start) {
+                return start * Integer.parseInt(line);
             }
-        }, filePath);
+        }, filePath, 1);
     }
 }

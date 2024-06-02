@@ -32,4 +32,36 @@ public class BufferedReaderContext {
 
         return null;
     }
+
+
+    public Integer lineReadTemplate(LineCallback callback, String filePath, int initVal) {
+        BufferedReader br = null;
+
+        try {
+            br = new BufferedReader(new FileReader(filePath));
+            int result = initVal;
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                result = callback.doSomething(line, result);
+            }
+            return result;
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
 }
