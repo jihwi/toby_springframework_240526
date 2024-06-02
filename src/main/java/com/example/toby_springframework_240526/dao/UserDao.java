@@ -14,9 +14,9 @@ public class UserDao {
     private DataSource dataSource;
     private JdbcContext jdbcContext; //DI개념과 다르게 인터페이스가 아니라 클래스레벨을 DI한다.
 
-    public UserDao(DataSource dataSource, JdbcContext jdbcContext) {
+    public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.jdbcContext = jdbcContext;
+        this.jdbcContext = new JdbcContext(dataSource);
     }
 
     public void add(User user) throws SQLException {
