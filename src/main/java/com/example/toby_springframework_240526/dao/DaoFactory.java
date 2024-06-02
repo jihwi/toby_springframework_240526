@@ -2,6 +2,7 @@ package com.example.toby_springframework_240526.dao;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import javax.sql.DataSource;
@@ -23,7 +24,12 @@ public class DaoFactory {
     }
 
     @Bean
+    public JdbcContext jdbcContext(DataSource dataSource) {
+        return new JdbcContext(dataSource);
+    }
+
+    @Bean
     public UserDao userDao() {
-        return new UserDao(dataSource());
+        return new UserDao(dataSource(), jdbcContext(dataSource()));
     }
 }

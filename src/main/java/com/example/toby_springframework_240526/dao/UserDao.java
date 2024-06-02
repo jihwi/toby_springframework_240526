@@ -12,13 +12,15 @@ import java.sql.SQLException;
 public class UserDao {
 
     private DataSource dataSource;
+    private JdbcContext jdbcContext; //DI개념과 다르게 인터페이스가 아니라 클래스레벨을 DI한다.
 
-    public UserDao(DataSource dataSource) {
+    public UserDao(DataSource dataSource, JdbcContext jdbcContext) {
         this.dataSource = dataSource;
+        this.jdbcContext = jdbcContext;
     }
 
     public void add(User user) throws SQLException {
-        this.jdbcContextWithStatementStrategy(new StatementStrategy() {
+        jdbcContext.jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makeStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement(
@@ -33,7 +35,7 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        this.jdbcContextWithStatementStrategy(new StatementStrategy() {
+        jdbcContext.jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makeStatement(Connection c) throws SQLException {
                 return c.prepareStatement(
@@ -43,32 +45,7 @@ public class UserDao {
         });
     }
 
-    private void jdbcContextWithStatementStrategy(StatementStrategy statementStrategy) throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
 
-        try {
-            c = dataSource.getConnection();
-            ps = statementStrategy.makeStatement(c);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
-    }
 
     public User get(String id) throws SQLException, EmptyResultDataAccessException {
         Connection c = null;
