@@ -2,6 +2,7 @@ package com.example.toby_springframework_240526.dao;
 
 import com.example.toby_springframework_240526.domain.User;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -12,19 +13,19 @@ import java.sql.SQLException;
 public class UserDao {
 
     private DataSource dataSource;
-    private JdbcContext jdbcContext; //DI개념과 다르게 인터페이스가 아니라 클래스레벨을 DI한다.
+    private JdbcTemplate jdbcTemplate; //스프링에서 제공하는 템플릿/콜백 
 
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.jdbcContext = new JdbcContext(dataSource);
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     public void add(User user) throws SQLException {
-        jdbcContext.executeSql("insert into users values (?,?,?)", user.getId(), user.getName(), user.getPassword());
+        jdbcTemplate.update("insert into users values (?,?,?)", user.getId(), user.getName(), user.getPassword());
     }
 
     public void deleteAll() throws SQLException {
-        jdbcContext.executeSql("delete from users");
+        jdbcTemplate.update("delete from users");
     }
 
 
