@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -25,6 +26,9 @@ public class UserDaoTest {
     private ApplicationContext context;
 
     private UserDao dao;
+
+    private User user1;
+    private User user2;
 
     /**
      * 테스트마다 실행전에 사전작업은 before에 중복제거
@@ -39,26 +43,41 @@ public class UserDaoTest {
 
         dao.deleteAll();
         assertThat(dao.getCount(), is(0));
+
+        user1 = new User();
+        user1.setId("gyumee");
+        user1.setName("박성철");
+        user1.setPassword("springno1");
+
+        user2 = new User();
+        user2.setId("whiteship");
+        user2.setName("백기선");
+        user2.setPassword("married");
     }
 
     @Test
     public void addAndGet() throws SQLException {
-        User user = new User();
-        user.setId("gyumee");
-        user.setName("박성철");
-        user.setPassword("springno1");
-
-        dao.add(user);
+        dao.add(user1);
         assertThat(dao.getCount(), is(1));
 
-        User user2 = dao.get(user.getId());
-        assertThat(user2.getName(), is(user.getName()));
-        assertThat(user2.getPassword(), is(user.getPassword()));
+        User user2 = dao.get(user1.getId());
+        assertThat(user2.getName(), is(user1.getName()));
+        assertThat(user2.getPassword(), is(user1.getPassword()));
 
     }
 
     @Test(expected = EmptyResultDataAccessException.class)
     public void getUserFailure() throws SQLException {
         dao.get("unknown_id");
+    }
+
+    @Test
+    public void getAll() throws SQLException {
+        dao.add(user1);
+        dao.add(user2);
+
+        List<User> all = dao.getAll();
+        assertThat(all.size(), is(2));
+
     }
 }
