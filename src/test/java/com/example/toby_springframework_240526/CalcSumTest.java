@@ -31,4 +31,10 @@ public class CalcSumTest {
         Integer multiply = calculator.calcMultiply(path);
         assertThat(multiply, is(24));
     }
+
+    @Test
+    public void concatenate() {
+        String str = calculator.concatenate(path);
+        assertThat(str, is("1234"));
+    }
 }

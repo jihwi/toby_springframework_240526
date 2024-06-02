@@ -34,12 +34,12 @@ public class BufferedReaderContext {
     }
 
 
-    public Integer lineReadTemplate(LineCallback callback, String filePath, int initVal) {
+    public <T> T lineReadTemplate(LineCallback<T> callback, String filePath, T initVal) {
         BufferedReader br = null;
 
         try {
             br = new BufferedReader(new FileReader(filePath));
-            int result = initVal;
+            T result = initVal;
             String line = null;
             while ((line = br.readLine()) != null) {
                 result = callback.doSomething(line, result);

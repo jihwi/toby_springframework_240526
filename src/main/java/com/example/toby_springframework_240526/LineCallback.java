@@ -1,6 +1,6 @@
 package com.example.toby_springframework_240526;
 
-public interface LineCallback {
+public interface LineCallback<T> {
 
-    int doSomething(String line, int start);
+    T doSomething(String line, T start);
 }

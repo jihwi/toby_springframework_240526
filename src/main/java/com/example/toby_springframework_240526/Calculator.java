@@ -1,7 +1,5 @@
 package com.example.toby_springframework_240526;
 
-import java.io.*;
-
 public class Calculator {
 
     private BufferedReaderContext context;
@@ -11,21 +9,31 @@ public class Calculator {
     }
 
     public Integer calcSum(String filePath) {
-       return context.lineReadTemplate(new LineCallback() {
+       return context.lineReadTemplate(new LineCallback<Integer>() {
+
            @Override
-           public int doSomething(String line, int start) {
+           public Integer doSomething(String line, Integer start) {
                return start + Integer.parseInt(line);
            }
        }, filePath, 0);
     }
 
     public Integer calcMultiply(String filePath) {
-        return context.lineReadTemplate(new LineCallback() {
+        return context.lineReadTemplate(new LineCallback<Integer>() {
 
             @Override
-            public int doSomething(String line, int start) {
+            public Integer doSomething(String line, Integer start) {
                 return start * Integer.parseInt(line);
             }
         }, filePath, 1);
+    }
+
+    public String concatenate(String filePath) {
+        return context.lineReadTemplate(new LineCallback<String>() {
+            @Override
+            public String doSomething(String line, String start) {
+                return start + line;
+            }
+        }, filePath, "");
     }
 }
