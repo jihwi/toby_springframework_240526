@@ -8,8 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class UserDao {
 
@@ -21,15 +19,15 @@ public class UserDao {
 
     public void add(User user) throws SQLException {
         UserDaoAdd userDaoAdd = new UserDaoAdd(user);
-        this.jdbcContextWithStatementStrategyVoid(userDaoAdd);
+        this.jdbcContextWithStatementStrategy(userDaoAdd);
     }
 
     public void deleteAll() throws SQLException {
         UserDaoDeleteAll userDaoDeleteAll = new UserDaoDeleteAll();
-        this.jdbcContextWithStatementStrategyVoid(userDaoDeleteAll);
+        this.jdbcContextWithStatementStrategy(userDaoDeleteAll);
     }
 
-    private void jdbcContextWithStatementStrategyVoid(StatementStrategy statementStrategy) throws SQLException {
+    private void jdbcContextWithStatementStrategy(StatementStrategy statementStrategy) throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
 
@@ -56,14 +54,31 @@ public class UserDao {
         }
     }
 
-    private ResultSet jdbcContextWithStatementStrategyResultSet(StatementStrategy statementStrategy) throws SQLException {
+    public User get(String id) throws SQLException, EmptyResultDataAccessException {
         Connection c = null;
         PreparedStatement ps = null;
 
         try {
             c = dataSource.getConnection();
-            ps = statementStrategy.makeStatement(c);
-            return ps.executeQuery();
+            ps = c.prepareStatement(
+                    "select * from users where id = ?"
+            );
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            User user = null;
+            if (rs.next()) {
+                user = new User();
+                user.setId(rs.getString("id"));
+                user.setName(rs.getString("name"));
+                user.setPassword(rs.getString("password"));
+            }
+
+            if (user == null) {
+                throw new EmptyResultDataAccessException(1);
+            }
+
+            return user;
 
         } catch (SQLException e) {
             throw e;
@@ -82,27 +97,38 @@ public class UserDao {
                 }
             }
         }
-    }
 
-    public User get(String id) throws SQLException, EmptyResultDataAccessException {
-        UserDaoGet userDaoGet = new UserDaoGet(id);
-        ResultSet rs = this.jdbcContextWithStatementStrategyResultSet(userDaoGet);
-
-        User user = null;
-        if (rs.next()) {
-            user = new User();
-            user.setId(rs.getString("id"));
-            user.setName(rs.getString("name"));
-            user.setPassword(rs.getString("password"));
-        }
-        return user;
     }
 
     public int getCount() throws SQLException {
-       UserDaoCount userDaoCount = new UserDaoCount();
-        ResultSet rs = this.jdbcContextWithStatementStrategyResultSet(userDaoCount);
-        rs.next();
+        Connection c = null;
+        PreparedStatement ps = null;
 
-        return rs.getInt(1);
+        try {
+            c = dataSource.getConnection();
+            ps = c.prepareStatement(
+                    "select count(*) from users"
+            );
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 }
