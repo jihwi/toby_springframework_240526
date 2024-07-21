@@ -1,5 +1,6 @@
 package com.example.toby_springframework_240526.dao;
 
+import com.example.toby_springframework_240526.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
@@ -25,5 +26,10 @@ public class DaoFactory {
     @Bean
     public UserDao userDao() {
         return new UserDaoJdbc(dataSource());
+    }
+
+    @Bean
+    public UserService userService() {
+        return new UserService(userDao());
     }
 }

@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -21,7 +20,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
 
 @RunWith(SpringJUnit4ClassRunner.class) //테스트중에 사용할 애플리케이션 컨텍스트를 생성
 @ContextConfiguration(classes = DaoFactory.class) //설정 정보 세팅
@@ -116,4 +114,5 @@ public class UserDaoJdbcTest {
         User user2same = dao.get(user2.getId());
         checkSameUser(user2 ,user2same);
     }
+
 }
