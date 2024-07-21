@@ -33,19 +33,19 @@ public class UserDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public void add(User user) throws SQLException {
+    public void add(User user) {
         jdbcTemplate.update("insert into users values (?,?,?)", user.getId(), user.getName(), user.getPassword());
     }
 
-    public void deleteAll() throws SQLException {
+    public void deleteAll() {
         jdbcTemplate.update("delete from users");
     }
 
-    public User get(String id) throws SQLException, EmptyResultDataAccessException {
+    public User get(String id) {
         return jdbcTemplate.queryForObject("select * from users where id = ?", new Object[]{id}, this.rowMapper);
     }
 
-    public int getCount() throws SQLException {
+    public int getCount() {
         return jdbcTemplate.query("select count(*) from users", new ResultSetExtractor<Integer>() {
 
             @Override
@@ -56,7 +56,7 @@ public class UserDao {
         });
     }
 
-    public List<User> getAll() throws SQLException {
+    public List<User> getAll() {
         return jdbcTemplate.query("select * from users order by id", this.rowMapper);
     }
 }
