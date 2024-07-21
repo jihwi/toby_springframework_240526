@@ -1,5 +1,6 @@
 package com.example.toby_springframework_240526.dao;
 
+import com.example.toby_springframework_240526.domain.Level;
 import com.example.toby_springframework_240526.domain.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +24,9 @@ public class UserDaoJdbc implements UserDao{
             user.setId(resultSet.getString("id"));
             user.setName(resultSet.getString("name"));
             user.setPassword(resultSet.getString("password"));
+            user.setLevel(Level.valueOf(resultSet.getInt("level")));
+            user.setLogin(resultSet.getInt("login"));
+            user.setRecommend(resultSet.getInt("recommend"));
 
             return user;
         }
@@ -33,7 +37,7 @@ public class UserDaoJdbc implements UserDao{
     }
 
     public void add(User user) {
-        jdbcTemplate.update("insert into users values (?,?,?)", user.getId(), user.getName(), user.getPassword());
+        jdbcTemplate.update("insert into users values (?,?,?,?,?,?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().getValue(), user.getLogin(), user.getRecommend());
     }
 
     public void deleteAll() {
