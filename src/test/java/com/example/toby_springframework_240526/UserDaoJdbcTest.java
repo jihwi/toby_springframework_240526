@@ -95,4 +95,25 @@ public class UserDaoJdbcTest {
         assertThat(user1.getLogin(), is(user2.getLogin()));
         assertThat(user1.getRecommend(), is(user2.getRecommend()));
     }
+
+    @Test
+    public void update() {
+        dao.deleteAll();
+
+        dao.add(user1);
+        dao.add(user2);
+
+        user1.setName("오민규");
+        user1.setPassword("spring6");
+        user1.setLevel(Level.GOLD);
+        user1.setLogin(1000);
+        user1.setRecommend(999);
+        dao.update(user1);
+
+        User userUpdate = dao.get(user1.getId());
+        checkSameUser(user1, userUpdate);
+
+        User user2same = dao.get(user2.getId());
+        checkSameUser(user2 ,user2same);
+    }
 }
