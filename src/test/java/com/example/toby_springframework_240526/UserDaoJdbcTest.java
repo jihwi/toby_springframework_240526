@@ -2,12 +2,15 @@ package com.example.toby_springframework_240526;
 
 import com.example.toby_springframework_240526.dao.DaoFactory;
 import com.example.toby_springframework_240526.dao.UserDao;
+import com.example.toby_springframework_240526.dao.UserDaoJdbc;
 import com.example.toby_springframework_240526.domain.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -20,7 +23,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class) //테스트중에 사용할 애플리케이션 컨텍스트를 생성
 @ContextConfiguration(classes = DaoFactory.class) //설정 정보 세팅
-public class UserDaoTest {
+public class UserDaoJdbcTest {
 
     @Autowired
     private ApplicationContext context;
@@ -39,7 +42,7 @@ public class UserDaoTest {
         System.out.println(this.context);
         System.out.println(this);
 
-        dao = context.getBean(UserDao.class);
+        dao = context.getBean(UserDaoJdbc.class);
 
         dao.deleteAll();
         assertThat(dao.getCount(), is(0));
@@ -79,5 +82,13 @@ public class UserDaoTest {
         List<User> all = dao.getAll();
         assertThat(all.size(), is(2));
 
+    }
+
+    @Test(expected = DuplicateKeyException.class)
+    public void duplicateKey() {
+        dao.deleteAll();
+
+        dao.add(user1);
+        dao.add(user1);
     }
 }
