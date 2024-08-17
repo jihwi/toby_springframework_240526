@@ -7,6 +7,8 @@ import com.example.toby_springframework_240526.domain.User;
 import java.util.List;
 
 public class UserService {
+    public final static int MIN_LOGINCOUNT_FOR_SILVER = 50;
+    public final static int MIN_RECCOMEND_FOR_GOLD = 30;
 
     private final UserDao userDao;
 
@@ -32,8 +34,8 @@ public class UserService {
     private boolean canUpgradeLevel(User user) {
         Level currentLevel = user.getLevel();
         switch (currentLevel) {
-            case BASIC : return user.getLogin() >= 50 ;
-            case SILVER: return user.getRecommend() >= 30;
+            case BASIC : return user.getLogin() >= MIN_LOGINCOUNT_FOR_SILVER ;
+            case SILVER: return user.getRecommend() >= MIN_RECCOMEND_FOR_GOLD;
             case GOLD: return false;
             default: throw new IllegalArgumentException("Unknown level:" + currentLevel);
         }
