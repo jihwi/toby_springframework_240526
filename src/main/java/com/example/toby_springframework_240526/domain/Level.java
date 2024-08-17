@@ -1,22 +1,25 @@
 package com.example.toby_springframework_240526.domain;
 
 public enum Level {
-    BASIC(1),
-    SILVER(2),
-    GOLD(3);
 
-    private int value;
+    GOLD(3, null),
+    SILVER(2, GOLD),
+    BASIC(1, SILVER);
 
-    Level(int value) {
+    private final int value;
+    private final Level next;
+
+    Level(int value, Level next) {
         this.value = value;
+        this.next = next;
     }
 
     public int getValue() {
         return value;
     }
 
-    public void setValue(int value) {
-        this.value = value;
+    public Level getNext() {
+        return next;
     }
 
     public static Level valueOf(int value) {
@@ -28,4 +31,6 @@ public enum Level {
 
         throw new AssertionError("Unknown value : " + value);
     }
+
+
 }

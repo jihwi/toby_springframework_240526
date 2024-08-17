@@ -16,6 +16,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -48,9 +49,9 @@ public class UserDaoJdbcTest {
         dao.deleteAll();
         assertThat(dao.getCount(), is(0));
 
-        user1 = new User("gyumee", "박성철", "springno1", Level.BASIC, 1, 0);
-        user2 = new User("whiteship", "백기선","married", Level.SILVER, 55, 10);
-        user3 = new User("bumjin", "박범진", "spring3", Level.GOLD, 100, 40);
+        user1 = new User("gyumee", "박성철", "springno1", Level.BASIC, 1, 0, new Date());
+        user2 = new User("whiteship", "백기선","married", Level.SILVER, 55, 10, new Date());
+        user3 = new User("bumjin", "박범진", "spring3", Level.GOLD, 100, 40, new Date());
     }
 
     @Test
