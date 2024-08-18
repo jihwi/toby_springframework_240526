@@ -6,6 +6,8 @@ import com.example.toby_springframework_240526.domain.Level;
 import com.example.toby_springframework_240526.domain.User;
 import com.example.toby_springframework_240526.service.MockMailSender;
 import com.example.toby_springframework_240526.service.UserService;
+import com.example.toby_springframework_240526.service.UserServiceImpl;
+import com.example.toby_springframework_240526.service.UserServiceTx;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,8 +22,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static com.example.toby_springframework_240526.service.UserService.MIN_LOGINCOUNT_FOR_SILVER;
-import static com.example.toby_springframework_240526.service.UserService.MIN_RECCOMEND_FOR_GOLD;
+import static com.example.toby_springframework_240526.service.UserServiceImpl.MIN_LOGINCOUNT_FOR_SILVER;
+import static com.example.toby_springframework_240526.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -39,9 +41,6 @@ public class UserServiceTest {
 
     @Autowired
     private PlatformTransactionManager platformTransactionManager;
-
-    @Autowired
-    private MailSender mailSender;
 
     private List<User> users;
 
@@ -62,8 +61,12 @@ public class UserServiceTest {
         dao.deleteAll();
         for (User user : users) dao.add(user);
 
+
         MockMailSender mockMailSender = new MockMailSender();
-        userService.setMailSender(mockMailSender);
+        UserServiceImpl userServiceImpl = new UserServiceImpl(dao);
+        userServiceImpl.setMailSender(mockMailSender);
+
+        UserService userService = new UserServiceTx(userServiceImpl, platformTransactionManager);
 
         userService.upgradeLevels();
 
@@ -103,15 +106,18 @@ public class UserServiceTest {
 
     @Test
     public void upgradeAllOrNothing() throws Exception {
-        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao, platformTransactionManager);
-        testUserService.setMailSender(mailSender);
+
+        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
+        testUserService.setMailSender(new MockMailSender());
+        UserServiceTx userServiceTx = new UserServiceTx(testUserService, platformTransactionManager);
+
         dao.deleteAll();
         for (User user : users) {
             dao.add(user);
         }
 
         try {
-            testUserService.upgradeLevels();
+            userServiceTx.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
         }
@@ -119,11 +125,11 @@ public class UserServiceTest {
         checkLevel(users.get(1), Level.BASIC);
     }
 
-    static class TestUserService extends UserService {
+    static class TestUserService extends UserServiceImpl {
         private String id;
 
-        private TestUserService(String id, UserDao userDao, PlatformTransactionManager platformTransactionManager) {
-            super(userDao, platformTransactionManager);
+        private TestUserService(String id, UserDao userDao) {
+            super(userDao);
             this.id = id;
         }
 

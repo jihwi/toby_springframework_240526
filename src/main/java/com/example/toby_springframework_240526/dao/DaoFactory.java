@@ -2,6 +2,8 @@ package com.example.toby_springframework_240526.dao;
 
 import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
+import com.example.toby_springframework_240526.service.UserServiceImpl;
+import com.example.toby_springframework_240526.service.UserServiceTx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -35,9 +37,9 @@ public class DaoFactory {
 
     @Bean
     public UserService userService() {
-        UserService userService = new UserService(userDao(), platformTransactionManager());
-        userService.setMailSender(mailSender());
-        return userService;
+        UserServiceImpl userServiceImpl = new UserServiceImpl(userDao());
+        userServiceImpl.setMailSender(mailSender());
+        return new UserServiceTx(userServiceImpl, platformTransactionManager());
     }
 
     @Bean
