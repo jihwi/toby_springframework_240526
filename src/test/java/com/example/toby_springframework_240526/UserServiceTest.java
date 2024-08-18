@@ -11,8 +11,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +20,8 @@ import java.util.List;
 import static com.example.toby_springframework_240526.service.UserService.MIN_LOGINCOUNT_FOR_SILVER;
 import static com.example.toby_springframework_240526.service.UserService.MIN_RECCOMEND_FOR_GOLD;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -34,16 +35,16 @@ public class UserServiceTest {
     private UserDao dao;
 
     @Autowired
-    private DataSource dataSource;
+    private PlatformTransactionManager platformTransactionManager;
 
     private List<User> users;
 
     @Before
     public void init() {
         users = Arrays.asList(
-                new User("bumjin", "박범진", "p1", Level.BASIC, MIN_LOGINCOUNT_FOR_SILVER -1, 0, new Date()),
+                new User("bumjin", "박범진", "p1", Level.BASIC, MIN_LOGINCOUNT_FOR_SILVER - 1, 0, new Date()),
                 new User("joytouch", "강명성", "p2", Level.BASIC, MIN_LOGINCOUNT_FOR_SILVER, 0, new Date()),
-                new User("erwins", "신승한", "p3", Level.SILVER, 60, MIN_RECCOMEND_FOR_GOLD-1, new Date()),
+                new User("erwins", "신승한", "p3", Level.SILVER, 60, MIN_RECCOMEND_FOR_GOLD - 1, new Date()),
                 new User("madnite1", "이상호", "p4", Level.SILVER, 60, MIN_RECCOMEND_FOR_GOLD, new Date()),
                 new User("green", "오민규", "p5", Level.GOLD, 100, 100, new Date())
         );
@@ -52,7 +53,7 @@ public class UserServiceTest {
     @Test
     public void upgradeLevels() throws Exception {
         dao.deleteAll();
-        for (User user: users) dao.add(user);
+        for (User user : users) dao.add(user);
 
         userService.upgradeLevels();
 
@@ -87,7 +88,7 @@ public class UserServiceTest {
 
     @Test
     public void upgradeAllOrNothing() throws Exception {
-        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao, dataSource);
+        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao, platformTransactionManager);
         dao.deleteAll();
         for (User user : users) {
             dao.add(user);
@@ -96,7 +97,8 @@ public class UserServiceTest {
         try {
             testUserService.upgradeLevels();
             fail("TestUserServiceException expected");
-        } catch (TestUserServiceException e) {}
+        } catch (TestUserServiceException e) {
+        }
 
         checkLevel(users.get(1), Level.BASIC);
     }
@@ -104,12 +106,12 @@ public class UserServiceTest {
     static class TestUserService extends UserService {
         private String id;
 
-        private TestUserService(String id, UserDao userDao, DataSource dataSource){
-            super(userDao, dataSource);
+        private TestUserService(String id, UserDao userDao, PlatformTransactionManager platformTransactionManager) {
+            super(userDao, platformTransactionManager);
             this.id = id;
         }
 
-        protected void upgradeLevel(User user){
+        protected void upgradeLevel(User user) {
             if (user.getId().equals(id)) {
                 throw new TestUserServiceException();
             }

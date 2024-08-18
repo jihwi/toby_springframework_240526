@@ -3,7 +3,9 @@ package com.example.toby_springframework_240526.dao;
 import com.example.toby_springframework_240526.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -30,6 +32,11 @@ public class DaoFactory {
 
     @Bean
     public UserService userService() {
-        return new UserService(userDao(), dataSource());
+        return new UserService(userDao(), platformTransactionManager());
+    }
+
+    @Bean
+    public PlatformTransactionManager platformTransactionManager() {
+        return new DataSourceTransactionManager(dataSource()); //jta db로 변경을 원할시 이부분만 JTATransactionManager 로 생성해주면된다. 하이버네이트라면 HibernateTransactionManager
     }
 }

@@ -4,12 +4,10 @@ import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.Level;
 import com.example.toby_springframework_240526.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -18,10 +16,9 @@ public class UserService {
     public final static int MIN_RECCOMEND_FOR_GOLD = 30;
 
     private final UserDao userDao;
-    private final DataSource dataSource;
+    private final PlatformTransactionManager transactionManager;
 
     public void upgradeLevels() throws Exception {
-        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource); //jta db로 변경을 원할시 이부분만 JTATransactionManager 로 생성해주면된다. 하이버네이트라면 HibernateTransactionManager
         TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
         try {
