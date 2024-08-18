@@ -19,8 +19,7 @@ import java.util.List;
 import static com.example.toby_springframework_240526.service.UserService.MIN_LOGINCOUNT_FOR_SILVER;
 import static com.example.toby_springframework_240526.service.UserService.MIN_RECCOMEND_FOR_GOLD;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -80,5 +79,41 @@ public class UserServiceTest {
 
         assertThat(userWithLevel.getLevel(), is(withLevel.getLevel()));
         assertThat(userWithoutLevel.getLevel(), is(Level.BASIC));
+    }
+
+    @Test
+    public void upgradeAllOrNothing() {
+        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
+        dao.deleteAll();
+        for (User user : users) {
+            dao.add(user);
+        }
+
+        try {
+            testUserService.upgradeLevels();
+            fail("TestUserServiceException expected");
+        } catch (TestUserServiceException e) {}
+
+        checkLevel(users.get(1), Level.BASIC);
+    }
+
+    static class TestUserService extends UserService {
+        private String id;
+
+        private TestUserService(String id, UserDao userDao){
+            super(userDao);
+            this.id = id;
+        }
+
+        protected void upgradeLevel(User user){
+            if (user.getId().equals(id)) {
+                throw new TestUserServiceException();
+            }
+            super.upgradeLevel(user);
+        }
+    }
+
+    static class TestUserServiceException extends RuntimeException {
+
     }
 }
