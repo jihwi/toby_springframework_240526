@@ -19,8 +19,17 @@ public class User {
     int login;
     int recommend;
     Date lastUpgraded;
+    String email;
 
-
+    public User(String id, String name, String password, Level level, int login, int recommend, Date lastUpgraded) {
+        this.id = id;
+        this.name = name;
+        this.password = password;
+        this.level = level;
+        this.login = login;
+        this.recommend = recommend;
+        this.lastUpgraded = lastUpgraded;
+    }
 
     public void upgradeLevel() {
         Level nextLevel = this.level.getNext();
