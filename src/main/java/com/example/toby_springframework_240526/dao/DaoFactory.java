@@ -1,5 +1,6 @@
 package com.example.toby_springframework_240526.dao;
 
+import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,8 +47,8 @@ public class DaoFactory {
 
     @Bean
     public MailSender mailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("mail.server.com");
+        MailSender mailSender = new DummyMailSender();
+//        mailSender.setHost("mail.server.com");
         return mailSender;
     }
 }
