@@ -11,6 +11,7 @@ import com.example.toby_springframework_240526.service.UserServiceTx;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.DirtiesContext;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -25,8 +27,7 @@ import java.util.List;
 import static com.example.toby_springframework_240526.service.UserServiceImpl.MIN_LOGINCOUNT_FOR_SILVER;
 import static com.example.toby_springframework_240526.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,28 +59,28 @@ public class UserServiceTest {
     @Test
     @DirtiesContext
     public void upgradeLevels() throws Exception {
-        dao.deleteAll();
-        for (User user : users) dao.add(user);
 
-
+        MockUserDao mockUserDao = new MockUserDao(users);
+        UserServiceImpl userServiceImpl = new UserServiceImpl(mockUserDao);
         MockMailSender mockMailSender = new MockMailSender();
-        UserServiceImpl userServiceImpl = new UserServiceImpl(dao);
         userServiceImpl.setMailSender(mockMailSender);
 
-        UserService userService = new UserServiceTx(userServiceImpl, platformTransactionManager);
+        userServiceImpl.upgradeLevels();
 
-        userService.upgradeLevels();
-
-        checkLevel(users.get(0), Level.BASIC);
-        checkLevel(users.get(1), Level.SILVER);
-        checkLevel(users.get(2), Level.SILVER);
-        checkLevel(users.get(3), Level.GOLD);
-        checkLevel(users.get(4), Level.GOLD);
+        List<User> updated = mockUserDao.getUpdated();
+        assertThat(updated.size(), is(2));
+        checkUserAndLevel(updated.get(0), "joytouch", Level.SILVER);
+        checkUserAndLevel(updated.get(1), "madnite1", Level.GOLD);
 
         List<String> requests = mockMailSender.getRequests();
         assertThat(requests.size(), is(2));
         assertThat(requests.get(0), is(users.get(1).getEmail()));
         assertThat(requests.get(1), is(users.get(3).getEmail()));
+    }
+
+    private void checkUserAndLevel(User user, String expectedId, Level expectedLevel) {
+        assertThat(user.getId(), is(expectedId));
+        assertThat(user.getLevel(), is(expectedLevel));
     }
 
     private void checkLevel(User user, Level level) {
@@ -143,5 +144,49 @@ public class UserServiceTest {
 
     static class TestUserServiceException extends RuntimeException {
 
+    }
+
+    static class MockUserDao implements UserDao {
+        private List<User> users;
+        private List<User> updated = new ArrayList<>();
+
+        public MockUserDao(List<User> users) {
+            this.users = users;
+        }
+
+        public List<User> getUpdated() {
+            return updated;
+        }
+
+        @Override
+        public List<User> getAll() {
+            return users;
+        }
+
+        @Override
+        public void update(User user) {
+            updated.add(user);
+        }
+
+
+        @Override
+        public void add(User user) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void deleteAll() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public User get(String id) {
+            throw new UnsupportedOperationException(); //테스트에 사용되지 않는 메소드
+        }
+
+        @Override
+        public int getCount() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
