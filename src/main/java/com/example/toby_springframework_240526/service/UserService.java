@@ -3,6 +3,7 @@ package com.example.toby_springframework_240526.service;
 import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.Level;
 import com.example.toby_springframework_240526.domain.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -11,17 +12,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class UserService {
     public final static int MIN_LOGINCOUNT_FOR_SILVER = 50;
     public final static int MIN_RECCOMEND_FOR_GOLD = 30;
 
     private final UserDao userDao;
     private final DataSource dataSource;
-
-    public UserService(UserDao userDao, DataSource dataSource) {
-        this.userDao = userDao;
-        this.dataSource = dataSource;
-    }
 
     public void upgradeLevels() throws Exception {
         TransactionSynchronizationManager.initSynchronization();
