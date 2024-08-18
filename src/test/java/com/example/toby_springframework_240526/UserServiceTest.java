@@ -11,9 +11,11 @@ import com.example.toby_springframework_240526.service.UserServiceTx;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -28,6 +30,7 @@ import static com.example.toby_springframework_240526.service.UserServiceImpl.MI
 import static com.example.toby_springframework_240526.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -59,23 +62,37 @@ public class UserServiceTest {
     @Test
     @DirtiesContext
     public void upgradeLevels() throws Exception {
+        UserDao mockUserDao = mock(UserDao.class);
+        when(mockUserDao.getAll()).thenReturn(this.users);
 
-        MockUserDao mockUserDao = new MockUserDao(users);
         UserServiceImpl userServiceImpl = new UserServiceImpl(mockUserDao);
-        MockMailSender mockMailSender = new MockMailSender();
+        MailSender mockMailSender = mock(MailSender.class);
         userServiceImpl.setMailSender(mockMailSender);
 
         userServiceImpl.upgradeLevels();
 
-        List<User> updated = mockUserDao.getUpdated();
-        assertThat(updated.size(), is(2));
-        checkUserAndLevel(updated.get(0), "joytouch", Level.SILVER);
-        checkUserAndLevel(updated.get(1), "madnite1", Level.GOLD);
+        verify(mockUserDao, times(2)).update(any(User.class));
+        verify(mockUserDao).update(this.users.get(1)); //파라미터 객체 검증
+        assertThat(users.get(1).getLevel(), is(Level.SILVER));
+        verify(mockUserDao).update(this.users.get(3));
+        assertThat(users.get(3).getLevel(), is(Level.GOLD));
 
-        List<String> requests = mockMailSender.getRequests();
-        assertThat(requests.size(), is(2));
-        assertThat(requests.get(0), is(users.get(1).getEmail()));
-        assertThat(requests.get(1), is(users.get(3).getEmail()));
+        ArgumentCaptor<SimpleMailMessage> mailMessageArg = ArgumentCaptor.forClass(SimpleMailMessage.class); //넘긴 파라미터 내부 정보 확인시 유용
+        verify(mockMailSender, times(2)).send(mailMessageArg.capture());
+        List<SimpleMailMessage> allValues = mailMessageArg.getAllValues();
+        assertThat(allValues.get(0).getTo()[0], is(users.get(1).getEmail()));
+        assertThat(allValues.get(1).getTo()[0], is(users.get(3).getEmail()));
+
+
+//        List<User> updated = mockUserDao.getUpdated();
+//        assertThat(updated.size(), is(2));
+//        checkUserAndLevel(updated.get(0), "joytouch", Level.SILVER);
+//        checkUserAndLevel(updated.get(1), "madnite1", Level.GOLD);
+//
+//        List<String> requests = mockMailSender.getRequests();
+//        assertThat(requests.size(), is(2));
+//        assertThat(requests.get(0), is(users.get(1).getEmail()));
+//        assertThat(requests.get(1), is(users.get(3).getEmail()));
     }
 
     private void checkUserAndLevel(User user, String expectedId, Level expectedLevel) {
