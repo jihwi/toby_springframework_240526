@@ -4,12 +4,12 @@ import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.Level;
 import com.example.toby_springframework_240526.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -21,26 +21,21 @@ public class UserService {
     private final DataSource dataSource;
 
     public void upgradeLevels() throws Exception {
-        TransactionSynchronizationManager.initSynchronization();
-        Connection c = DataSourceUtils.getConnection(dataSource);
-        c.setAutoCommit(false);
+        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource); //jta db로 변경을 원할시 이부분만 JTATransactionManager 로 생성해주면된다. 하이버네이트라면 HibernateTransactionManager
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
         try {
             List<User> all = userDao.getAll();
 
             for (User user : all) {
-                if(canUpgradeLevel(user)) {
+                if (canUpgradeLevel(user)) {
                     upgradeLevel(user);
                 }
             }
-            c.commit();
-        }catch (Exception e) {
-            c.rollback();
+            transactionManager.commit(status);
+        } catch (Exception e) {
+            transactionManager.rollback(status);
             throw e;
-        }finally {
-            DataSourceUtils.releaseConnection(c, dataSource);
-            TransactionSynchronizationManager.unbindResource(dataSource);
-            TransactionSynchronizationManager.clearSynchronization();
         }
     }
 
@@ -52,14 +47,18 @@ public class UserService {
     private boolean canUpgradeLevel(User user) {
         Level currentLevel = user.getLevel();
         switch (currentLevel) {
-            case BASIC : return user.getLogin() >= MIN_LOGINCOUNT_FOR_SILVER ;
-            case SILVER: return user.getRecommend() >= MIN_RECCOMEND_FOR_GOLD;
-            case GOLD: return false;
-            default: throw new IllegalArgumentException("Unknown level:" + currentLevel);
+            case BASIC:
+                return user.getLogin() >= MIN_LOGINCOUNT_FOR_SILVER;
+            case SILVER:
+                return user.getRecommend() >= MIN_RECCOMEND_FOR_GOLD;
+            case GOLD:
+                return false;
+            default:
+                throw new IllegalArgumentException("Unknown level:" + currentLevel);
         }
     }
 
-    public void add(User user){
+    public void add(User user) {
         if (user.getLevel() == null) {
             user.setLevel(Level.BASIC);
         }
