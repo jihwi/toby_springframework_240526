@@ -1,9 +1,9 @@
 package com.example.toby_springframework_240526;
 
-import com.example.toby_springframework_240526.service.Hello;
-import com.example.toby_springframework_240526.service.HelloTarget;
-import com.example.toby_springframework_240526.service.HelloUppercase;
-import com.example.toby_springframework_240526.service.UpperCaseHandler;
+import com.example.toby_springframework_240526.service.aop.Hello;
+import com.example.toby_springframework_240526.service.aop.HelloTarget;
+import com.example.toby_springframework_240526.service.aop.HelloUppercase;
+import com.example.toby_springframework_240526.service.aop.UpperCaseHandler;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;

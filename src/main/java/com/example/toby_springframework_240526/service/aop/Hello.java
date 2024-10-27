@@ -1,4 +1,4 @@
-package com.example.toby_springframework_240526.service;
+package com.example.toby_springframework_240526.service.aop;
 
 public interface Hello {
     String sayHello(String name);
