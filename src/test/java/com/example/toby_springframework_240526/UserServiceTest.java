@@ -1,6 +1,5 @@
 package com.example.toby_springframework_240526;
 
-import com.example.toby_springframework_240526.dao.DaoFactory;
 import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.domain.Level;
 import com.example.toby_springframework_240526.domain.User;
@@ -8,12 +7,15 @@ import com.example.toby_springframework_240526.service.MockMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
 import com.example.toby_springframework_240526.service.aop.TransactionHandler;
+import com.example.toby_springframework_240526.service.aop.TxProxyFactoryBean;
 import com.example.toby_springframework_240526.service.aop.UserServiceTx;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
@@ -35,8 +37,11 @@ import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoFactory.class)
+@ContextConfiguration(classes = BeanFactory.class)
 public class UserServiceTest {
+
+    @Autowired
+    private ApplicationContext context;
 
     @Autowired
     private UserService userService;
@@ -161,6 +166,29 @@ public class UserServiceTest {
 
         try {
             proxyInstance.upgradeLevels();
+            fail("TestUserServiceException expected");
+        } catch (TestUserServiceException e) {
+        }
+        checkLevel(users.get(1), Level.BASIC);
+    }
+
+    @Test
+    @DirtiesContext //빈 팩토리 설정을 바꾸는 작업이 있어서 (testUserService) 설정. 다이내믹 프록시 팩토리 빈을 직접 맏르어 사용할때는 없앴다가 다시 등장한 컨텍스트 무효화 애노테이션
+    public void upgradeAllOrNothingByDynamicProxyWithFactoryBean() throws Exception {
+        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
+        testUserService.setMailSender(new MockMailSender());
+
+        dao.deleteAll();
+        for (User user : users) {
+            dao.add(user);
+        }
+
+        TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userTxService", TxProxyFactoryBean.class);
+        txProxyFactoryBean.setTarget(testUserService);
+        UserService userTxService = (UserService) txProxyFactoryBean.getObject();
+
+        try {
+            userTxService.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
         }

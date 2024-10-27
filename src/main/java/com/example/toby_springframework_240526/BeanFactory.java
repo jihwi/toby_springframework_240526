@@ -1,10 +1,12 @@
-package com.example.toby_springframework_240526.dao;
+package com.example.toby_springframework_240526;
 
+import com.example.toby_springframework_240526.dao.UserDao;
+import com.example.toby_springframework_240526.dao.UserDaoJdbc;
 import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
-import com.example.toby_springframework_240526.service.aop.Message;
 import com.example.toby_springframework_240526.service.aop.MessageFactoryBean;
+import com.example.toby_springframework_240526.service.aop.TxProxyFactoryBean;
 import com.example.toby_springframework_240526.service.aop.UserServiceTx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +21,7 @@ import javax.sql.DataSource;
  * 객체를 생성하는 역할 담당 오브젝트 팩토리 (제어의 역전)
  */
 @Configuration
-public class DaoFactory {
+public class BeanFactory {
 
     @Bean
     public DataSource dataSource() {
@@ -61,5 +63,15 @@ public class DaoFactory {
         MessageFactoryBean messageFactoryBean = new MessageFactoryBean();
         messageFactoryBean.setText(text);
         return messageFactoryBean;
+    }
+
+    @Bean
+    public TxProxyFactoryBean userTxService(){
+        TxProxyFactoryBean txProxyFactoryBean = new TxProxyFactoryBean();
+        txProxyFactoryBean.setTransactionManager(this.platformTransactionManager());
+        txProxyFactoryBean.setTarget(this.userService());
+        txProxyFactoryBean.setServiceInterface(UserService.class);
+        txProxyFactoryBean.setPattern("upgradeLevels");
+        return  txProxyFactoryBean;
     }
 }

@@ -1,6 +1,5 @@
 package com.example.toby_springframework_240526;
 
-import com.example.toby_springframework_240526.dao.DaoFactory;
 import com.example.toby_springframework_240526.service.aop.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +17,7 @@ import static org.junit.Assert.assertThat;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {DaoFactory.class})
+@ContextConfiguration(classes = {BeanFactory.class})
 public class ReflectionTest {
 
     @Autowired

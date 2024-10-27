@@ -1,6 +1,5 @@
 package com.example.toby_springframework_240526;
 
-import com.example.toby_springframework_240526.dao.DaoFactory;
 import com.example.toby_springframework_240526.dao.UserDao;
 import com.example.toby_springframework_240526.dao.UserDaoJdbc;
 import com.example.toby_springframework_240526.domain.Level;
@@ -23,7 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class) //테스트중에 사용할 애플리케이션 컨텍스트를 생성
-@ContextConfiguration(classes = DaoFactory.class) //설정 정보 세팅
+@ContextConfiguration(classes = BeanFactory.class) //설정 정보 세팅
 public class UserDaoJdbcTest {
 
     @Autowired
