@@ -3,10 +3,12 @@ package com.example.toby_springframework_240526;
 import com.example.toby_springframework_240526.service.Hello;
 import com.example.toby_springframework_240526.service.HelloTarget;
 import com.example.toby_springframework_240526.service.HelloUppercase;
+import com.example.toby_springframework_240526.service.UpperCaseHandler;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -32,5 +34,11 @@ public class ReflectionTest {
     public void helloProxy() {
         Hello hello = new HelloUppercase(new HelloTarget());
         assertThat(hello.sayHello("Toby"), is("HELLO TOBY"));
+    }
+
+    @Test
+    public void dynamicProxy() {
+        Hello proxiedHello = (Hello) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{Hello.class}, new UpperCaseHandler((new HelloTarget())));
+        assertThat(proxiedHello.sayHello("Toby"), is("HELLO TOBY"));
     }
 }
