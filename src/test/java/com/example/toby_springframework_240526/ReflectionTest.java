@@ -1,10 +1,13 @@
 package com.example.toby_springframework_240526;
 
-import com.example.toby_springframework_240526.service.aop.Hello;
-import com.example.toby_springframework_240526.service.aop.HelloTarget;
-import com.example.toby_springframework_240526.service.aop.HelloUppercase;
-import com.example.toby_springframework_240526.service.aop.UpperCaseHandler;
+import com.example.toby_springframework_240526.dao.DaoFactory;
+import com.example.toby_springframework_240526.service.aop.*;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,7 +17,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {DaoFactory.class})
 public class ReflectionTest {
+
+    @Autowired
+    ApplicationContext context;
 
     @Test
     public void invokeMethod() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -40,5 +48,15 @@ public class ReflectionTest {
     public void dynamicProxy() {
         Hello proxiedHello = (Hello) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{Hello.class}, new UpperCaseHandler((new HelloTarget())));
         assertThat(proxiedHello.sayHello("Toby"), is("HELLO TOBY"));
+    }
+
+    @Test
+    public void factoryBean() {
+        Object message = context.getBean("message");
+        assertThat(message.getClass(), is(Message.class));
+        assertThat(((Message)message).getText(), is("Factory Bean"));
+
+        Object bean = context.getBean("&message"); //팩토리 빈이 만들어주는 빈 오브젝트가 아니라 픽토리 빈 자체를 가져오고 싶을경우
+        assertThat(bean.getClass(), is(MessageFactoryBean.class));
     }
 }

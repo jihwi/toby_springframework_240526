@@ -3,6 +3,8 @@ package com.example.toby_springframework_240526.dao;
 import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
+import com.example.toby_springframework_240526.service.aop.Message;
+import com.example.toby_springframework_240526.service.aop.MessageFactoryBean;
 import com.example.toby_springframework_240526.service.aop.UserServiceTx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,5 +53,13 @@ public class DaoFactory {
         MailSender mailSender = new DummyMailSender();
 //        mailSender.setHost("mail.server.com");
         return mailSender;
+    }
+
+    @Bean
+    public MessageFactoryBean message() {
+        String text = "Factory Bean";
+        MessageFactoryBean messageFactoryBean = new MessageFactoryBean();
+        messageFactoryBean.setText(text);
+        return messageFactoryBean;
     }
 }
