@@ -6,8 +6,12 @@ import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
 import com.example.toby_springframework_240526.service.aop.MessageFactoryBean;
+import com.example.toby_springframework_240526.service.aop.TransactionAdvice;
 import com.example.toby_springframework_240526.service.aop.TxProxyFactoryBean;
 import com.example.toby_springframework_240526.service.aop.UserServiceTx;
+import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.aop.support.NameMatchMethodPointcut;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -73,5 +77,33 @@ public class BeanFactory {
         txProxyFactoryBean.setServiceInterface(UserService.class);
         txProxyFactoryBean.setPattern("upgradeLevels");
         return  txProxyFactoryBean;
+    }
+
+    @Bean
+    public TransactionAdvice transactionAdvice(){
+        TransactionAdvice transactionAdvice = new TransactionAdvice(platformTransactionManager());
+        return transactionAdvice;
+    }
+
+    @Bean
+    public NameMatchMethodPointcut nameMatchMethodPointcut(){
+        NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+        pointcut.setMappedName("upgrade*");
+        return pointcut;
+    }
+
+    @Bean
+    public DefaultPointcutAdvisor advisor() {
+        DefaultPointcutAdvisor defaultPointcutAdvisor = new DefaultPointcutAdvisor(nameMatchMethodPointcut(), transactionAdvice());
+        return defaultPointcutAdvisor;
+    }
+
+    @Bean
+    public ProxyFactoryBean userServiceProxy() {
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.setTarget(userService());
+
+        proxyFactoryBean.addAdvisor(advisor());
+        return proxyFactoryBean;
     }
 }

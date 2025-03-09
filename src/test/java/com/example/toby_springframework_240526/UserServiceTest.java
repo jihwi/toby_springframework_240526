@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -129,11 +130,18 @@ public class UserServiceTest {
     }
 
     @Test
+    @DirtiesContext
     public void upgradeAllOrNothing() throws Exception {
 
         TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
         testUserService.setMailSender(new MockMailSender());
-        UserServiceTx userServiceTx = new UserServiceTx(testUserService, platformTransactionManager);
+
+//        UserServiceTx userServiceTx = new UserServiceTx(testUserService, platformTransactionManager);
+
+        ProxyFactoryBean bean = context.getBean("&userServiceProxy", ProxyFactoryBean.class);
+        bean.setTarget(testUserService);
+
+        UserService userServiceTx = (UserService) bean.getObject();
 
         dao.deleteAll();
         for (User user : users) {
