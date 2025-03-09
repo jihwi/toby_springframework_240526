@@ -6,6 +6,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.aop.ClassFilter;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.NameMatchMethodPointcut;
@@ -20,6 +21,7 @@ import java.lang.reflect.Proxy;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -109,5 +111,76 @@ public class DynamicProxyTest {
         assertThat(hello.sayHello("Toby"), is("HELLO TOBY"));
         assertThat(hello.sayHi("Toby"), is("HI TOBY"));
         assertThat(hello.sayThankYou("Toby"), is("Thank You Toby"));
+    }
+
+    @Test
+    public void classNamePointtcutAdvisor() {
+        NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+        pointcut.setClassFilter(new ClassFilter() {
+            @Override
+            public boolean matches(Class<?> clazz) {
+                return clazz.getSimpleName().startsWith("HelloT");
+            }
+        });
+
+        pointcut.setMappedName("sayH*");
+
+        checkAdviced(new HelloTarget(), pointcut, true);
+        checkAdviced(new HelloWorld(), pointcut, false);
+        checkAdviced(new HelloToby(), pointcut, true);
+    }
+
+    private void checkAdviced(Object target, NameMatchMethodPointcut pointcut, boolean adviced) {
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.setTarget(target);
+        proxyFactoryBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UpperCaseAdvice()));
+
+        Hello proxyHelloTarget = (Hello) proxyFactoryBean.getObject();
+
+        if (adviced) {
+            assertThat(proxyHelloTarget.sayHello("Toby"), is("HELLO TOBY"));
+            assertThat(proxyHelloTarget.sayHi("Toby"), is("HI TOBY"));
+            assertThat(proxyHelloTarget.sayThankYou("Toby"), is("Thank You Toby"));
+        }else {
+            assertThat(proxyHelloTarget.sayHello("Toby"), is("Hello Toby"));
+            assertThat(proxyHelloTarget.sayHi("Toby"), is("Hi Toby"));
+            assertThat(proxyHelloTarget.sayThankYou("Toby"), is("Thank You Toby"));
+        }
+    }
+
+    private class HelloWorld implements Hello{
+
+        @Override
+        public String sayHello(String name) {
+            return "Hello " + name;
+        }
+
+        @Override
+        public String sayHi(String name) {
+            return "Hi " + name;
+        }
+
+        @Override
+        public String sayThankYou(String name) {
+            return "Thank You " + name;
+        }
+    }
+
+    private class HelloToby implements Hello{
+
+        @Override
+        public String sayHello(String name) {
+            return "Hello " + name;
+        }
+
+        @Override
+        public String sayHi(String name) {
+            return "Hi " + name;
+        }
+
+        @Override
+        public String sayThankYou(String name) {
+            return "Thank You " + name;
+        }
     }
 }
