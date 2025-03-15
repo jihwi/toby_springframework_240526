@@ -6,6 +6,7 @@ import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
 import com.example.toby_springframework_240526.service.aop.*;
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
@@ -93,7 +94,7 @@ public class BeanFactory {
 //
     @Bean
     public DefaultPointcutAdvisor advisor() {
-        DefaultPointcutAdvisor defaultPointcutAdvisor = new DefaultPointcutAdvisor(nameMatchClassMethodPointcut(), transactionAdvice());
+        DefaultPointcutAdvisor defaultPointcutAdvisor = new DefaultPointcutAdvisor(aspectJExpressionPointcut(), transactionAdvice());
         return defaultPointcutAdvisor;
     }
 //
@@ -115,16 +116,23 @@ public class BeanFactory {
         return new DefaultAdvisorAutoProxyCreator();
     }
 
-    @Bean
-    public NameMatchClassMethodPointcut nameMatchClassMethodPointcut() {
-        NameMatchClassMethodPointcut nameMatchClassMethodPointcut = new NameMatchClassMethodPointcut();
-        nameMatchClassMethodPointcut.setMappedClassName("*ServiceImpl");
-        nameMatchClassMethodPointcut.setMappedName("upgrade*");
-        return nameMatchClassMethodPointcut;
-    }
+//    @Bean
+//    public NameMatchClassMethodPointcut nameMatchClassMethodPointcut() {
+//        NameMatchClassMethodPointcut nameMatchClassMethodPointcut = new NameMatchClassMethodPointcut();
+//        nameMatchClassMethodPointcut.setMappedClassName("*ServiceImpl");
+//        nameMatchClassMethodPointcut.setMappedName("upgrade*");
+//        return nameMatchClassMethodPointcut;
+//    }
 
     @Bean
     public TestUserServiceImpl testUserService() {
         return new TestUserServiceImpl(userDao());
+    }
+
+    @Bean
+    public AspectJExpressionPointcut aspectJExpressionPointcut() {
+        AspectJExpressionPointcut aspectJExpressionPointcut = new AspectJExpressionPointcut();
+        aspectJExpressionPointcut.setExpression("execution(* *..*ServiceImpl.upgrade*(..))");
+        return aspectJExpressionPointcut;
     }
 }
