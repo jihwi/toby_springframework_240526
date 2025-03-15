@@ -5,11 +5,9 @@ import com.example.toby_springframework_240526.dao.UserDaoJdbc;
 import com.example.toby_springframework_240526.service.DummyMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
-import com.example.toby_springframework_240526.service.aop.MessageFactoryBean;
-import com.example.toby_springframework_240526.service.aop.TransactionAdvice;
-import com.example.toby_springframework_240526.service.aop.TxProxyFactoryBean;
-import com.example.toby_springframework_240526.service.aop.UserServiceTx;
+import com.example.toby_springframework_240526.service.aop.*;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.NameMatchMethodPointcut;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +40,7 @@ public class BeanFactory {
         return new UserDaoJdbc(dataSource());
     }
 
+
     @Bean
     public UserService userService() {
         UserServiceImpl userServiceImpl = new UserServiceImpl(userDao());
@@ -69,41 +68,63 @@ public class BeanFactory {
         return messageFactoryBean;
     }
 
-    @Bean
-    public TxProxyFactoryBean userTxService(){
-        TxProxyFactoryBean txProxyFactoryBean = new TxProxyFactoryBean();
-        txProxyFactoryBean.setTransactionManager(this.platformTransactionManager());
-        txProxyFactoryBean.setTarget(this.userService());
-        txProxyFactoryBean.setServiceInterface(UserService.class);
-        txProxyFactoryBean.setPattern("upgradeLevels");
-        return  txProxyFactoryBean;
-    }
-
+//    @Bean
+//    public TxProxyFactoryBean userTxService(){
+//        TxProxyFactoryBean txProxyFactoryBean = new TxProxyFactoryBean();
+//        txProxyFactoryBean.setTransactionManager(this.platformTransactionManager());
+//        txProxyFactoryBean.setTarget(this.userService());
+//        txProxyFactoryBean.setServiceInterface(UserService.class);
+//        txProxyFactoryBean.setPattern("upgradeLevels");
+//        return  txProxyFactoryBean;
+//    }
+//
     @Bean
     public TransactionAdvice transactionAdvice(){
         TransactionAdvice transactionAdvice = new TransactionAdvice(platformTransactionManager());
         return transactionAdvice;
     }
-
-    @Bean
-    public NameMatchMethodPointcut nameMatchMethodPointcut(){
-        NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
-        pointcut.setMappedName("upgrade*");
-        return pointcut;
-    }
-
+//
+//    @Bean
+//    public NameMatchMethodPointcut nameMatchMethodPointcut(){
+//        NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+//        pointcut.setMappedName("upgrade*");
+//        return pointcut;
+//    }
+//
     @Bean
     public DefaultPointcutAdvisor advisor() {
-        DefaultPointcutAdvisor defaultPointcutAdvisor = new DefaultPointcutAdvisor(nameMatchMethodPointcut(), transactionAdvice());
+        DefaultPointcutAdvisor defaultPointcutAdvisor = new DefaultPointcutAdvisor(nameMatchClassMethodPointcut(), transactionAdvice());
         return defaultPointcutAdvisor;
+    }
+//
+//    @Bean
+//    public ProxyFactoryBean userServiceProxy() {
+//        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+//        proxyFactoryBean.setTarget(userService());
+//
+//        proxyFactoryBean.addAdvisor(advisor());
+//        return proxyFactoryBean;
+//    }
+
+    /**
+     * 자동 프록시 생성기
+     * @return
+     */
+    @Bean
+    public static DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
+        return new DefaultAdvisorAutoProxyCreator();
     }
 
     @Bean
-    public ProxyFactoryBean userServiceProxy() {
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.setTarget(userService());
+    public NameMatchClassMethodPointcut nameMatchClassMethodPointcut() {
+        NameMatchClassMethodPointcut nameMatchClassMethodPointcut = new NameMatchClassMethodPointcut();
+        nameMatchClassMethodPointcut.setMappedClassName("*ServiceImpl");
+        nameMatchClassMethodPointcut.setMappedName("upgrade*");
+        return nameMatchClassMethodPointcut;
+    }
 
-        proxyFactoryBean.addAdvisor(advisor());
-        return proxyFactoryBean;
+    @Bean
+    public TestUserServiceImpl testUserService() {
+        return new TestUserServiceImpl(userDao());
     }
 }

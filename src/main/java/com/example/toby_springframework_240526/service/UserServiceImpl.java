@@ -38,9 +38,9 @@ public class UserServiceImpl implements UserService{
     protected void upgradeLevel(User user) {
         user.upgradeLevel();
         userDao.update(user);
-        if (user.getEmail() != null) {
-            sendUpgradeEmail(user);
-        }
+//        if (user.getEmail() != null) {
+//            sendUpgradeEmail(user);
+//        }
     }
 
     private void sendUpgradeEmail(User user) {

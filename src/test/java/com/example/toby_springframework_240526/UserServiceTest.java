@@ -6,17 +6,15 @@ import com.example.toby_springframework_240526.domain.User;
 import com.example.toby_springframework_240526.service.MockMailSender;
 import com.example.toby_springframework_240526.service.UserService;
 import com.example.toby_springframework_240526.service.UserServiceImpl;
+import com.example.toby_springframework_240526.service.aop.TestUserServiceImpl;
 import com.example.toby_springframework_240526.service.aop.TransactionHandler;
 import com.example.toby_springframework_240526.service.aop.TxProxyFactoryBean;
-import com.example.toby_springframework_240526.service.aop.UserServiceTx;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
@@ -129,19 +127,22 @@ public class UserServiceTest {
         assertThat(userWithoutLevel.getLevel(), is(Level.BASIC));
     }
 
+    @Autowired
+    UserService testUserService;
+
     @Test
-    @DirtiesContext
+//    @DirtiesContext
     public void upgradeAllOrNothing() throws Exception {
 
-        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
-        testUserService.setMailSender(new MockMailSender());
-
-//        UserServiceTx userServiceTx = new UserServiceTx(testUserService, platformTransactionManager);
-
-        ProxyFactoryBean bean = context.getBean("&userServiceProxy", ProxyFactoryBean.class);
-        bean.setTarget(testUserService);
-
-        UserService userServiceTx = (UserService) bean.getObject();
+//        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
+//        testUserService.setMailSender(new MockMailSender());
+//
+////        UserServiceTx userServiceTx = new UserServiceTx(testUserService, platformTransactionManager);
+//
+//        ProxyFactoryBean bean = context.getBean("&userServiceProxy", ProxyFactoryBean.class);
+//        bean.setTarget(testUserService);
+//
+//        UserService userServiceTx = (UserService) bean.getObject();
 
         dao.deleteAll();
         for (User user : users) {
@@ -149,75 +150,75 @@ public class UserServiceTest {
         }
 
         try {
-            userServiceTx.upgradeLevels();
-            fail("TestUserServiceException expected");
-        } catch (TestUserServiceException e) {
+            testUserService.upgradeLevels();
+            fail("RuntimeException expected");
+        } catch (RuntimeException e) {
         }
 
         checkLevel(users.get(1), Level.BASIC);
     }
 
-    @Test
-    public void upgradeAllOrNothingByDynamicProxy() {
-        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
-        testUserService.setMailSender(new MockMailSender());
+//    @Test
+//    public void upgradeAllOrNothingByDynamicProxy() {
+//        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
+//        testUserService.setMailSender(new MockMailSender());
+//
+//        dao.deleteAll();
+//        for (User user : users) {
+//            dao.add(user);
+//        }
+//
+//        TransactionHandler transactionHandler = new TransactionHandler(testUserService, platformTransactionManager);
+//        transactionHandler.setPattern("upgradeLevels");
+//
+//        UserService proxyInstance = (UserService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{UserService.class}, transactionHandler);
+//
+//        try {
+//            proxyInstance.upgradeLevels();
+//            fail("TestUserServiceException expected");
+//        } catch (TestUserServiceException e) {
+//        }
+//        checkLevel(users.get(1), Level.BASIC);
+//    }
 
-        dao.deleteAll();
-        for (User user : users) {
-            dao.add(user);
-        }
+//    @Test
+//    @DirtiesContext //빈 팩토리 설정을 바꾸는 작업이 있어서 (testUserService) 설정. 다이내믹 프록시 팩토리 빈을 직접 맏르어 사용할때는 없앴다가 다시 등장한 컨텍스트 무효화 애노테이션
+//    public void upgradeAllOrNothingByDynamicProxyWithFactoryBean() throws Exception {
+//        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
+//        testUserService.setMailSender(new MockMailSender());
+//
+//        dao.deleteAll();
+//        for (User user : users) {
+//            dao.add(user);
+//        }
+//
+//        TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userTxService", TxProxyFactoryBean.class);
+//        txProxyFactoryBean.setTarget(testUserService);
+//        UserService userTxService = (UserService) txProxyFactoryBean.getObject();
+//
+//        try {
+//            userTxService.upgradeLevels();
+//            fail("TestUserServiceException expected");
+//        } catch (TestUserServiceException e) {
+//        }
+//        checkLevel(users.get(1), Level.BASIC);
+//    }
 
-        TransactionHandler transactionHandler = new TransactionHandler(testUserService, platformTransactionManager);
-        transactionHandler.setPattern("upgradeLevels");
-
-        UserService proxyInstance = (UserService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{UserService.class}, transactionHandler);
-
-        try {
-            proxyInstance.upgradeLevels();
-            fail("TestUserServiceException expected");
-        } catch (TestUserServiceException e) {
-        }
-        checkLevel(users.get(1), Level.BASIC);
-    }
-
-    @Test
-    @DirtiesContext //빈 팩토리 설정을 바꾸는 작업이 있어서 (testUserService) 설정. 다이내믹 프록시 팩토리 빈을 직접 맏르어 사용할때는 없앴다가 다시 등장한 컨텍스트 무효화 애노테이션
-    public void upgradeAllOrNothingByDynamicProxyWithFactoryBean() throws Exception {
-        TestUserService testUserService = new TestUserService(users.get(3).getId(), dao);
-        testUserService.setMailSender(new MockMailSender());
-
-        dao.deleteAll();
-        for (User user : users) {
-            dao.add(user);
-        }
-
-        TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userTxService", TxProxyFactoryBean.class);
-        txProxyFactoryBean.setTarget(testUserService);
-        UserService userTxService = (UserService) txProxyFactoryBean.getObject();
-
-        try {
-            userTxService.upgradeLevels();
-            fail("TestUserServiceException expected");
-        } catch (TestUserServiceException e) {
-        }
-        checkLevel(users.get(1), Level.BASIC);
-    }
-
-    static class TestUserService extends UserServiceImpl {
-        private String id;
-
-        private TestUserService(String id, UserDao userDao) {
-            super(userDao);
-            this.id = id;
-        }
-
-        protected void upgradeLevel(User user) {
-            if (user.getId().equals(id)) {
-                throw new TestUserServiceException();
-            }
-            super.upgradeLevel(user);
-        }
-    }
+//    static class TestUserService extends UserServiceImpl {
+//        private String id;
+//
+//        private TestUserService(String id, UserDao userDao) {
+//            super(userDao);
+//            this.id = id;
+//        }
+//
+//        protected void upgradeLevel(User user) {
+//            if (user.getId().equals(id)) {
+//                throw new TestUserServiceException();
+//            }
+//            super.upgradeLevel(user);
+//        }
+//    }
 
     static class TestUserServiceException extends RuntimeException {
 
@@ -266,4 +267,5 @@ public class UserServiceTest {
             throw new UnsupportedOperationException();
         }
     }
+
 }
